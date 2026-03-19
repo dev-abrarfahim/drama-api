@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: drama-api
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: NODE_ENV
+        value: production
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: drama-cache
+          property: connectionString
+
+  - type: redis
+    name: drama-cache
+    plan: free
+    ipAllowList: [] # only allow internal connections

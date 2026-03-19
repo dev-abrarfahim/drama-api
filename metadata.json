@@ -1,0 +1,5 @@
+{
+  "name": "drama-api",
+  "description": "A production-ready REST API for scraping and serving structured drama streaming data from DramaCool.",
+  "requestFramePermissions": []
+}
