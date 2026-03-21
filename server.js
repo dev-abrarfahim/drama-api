@@ -38,7 +38,6 @@ dotenv.config();
 const app = express();
 
 // Determine the port to listen on.
-// In Replit the PORT env var is set to 5000.  We default to 5000 if not set.
 const PORT = process.env.PORT || 5000;
 
 // ---------------------------------------------------------------------------
@@ -99,7 +98,6 @@ app.use(errorHandler);
 
 // Begin listening for incoming connections.
 // '0.0.0.0' means "accept connections from any network interface",
-// which is required for Replit's proxied environment.
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`AsianCTV API running on http://localhost:${PORT}`);
 });
