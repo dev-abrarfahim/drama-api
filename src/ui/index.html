@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AsianCTV API</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0d0d0d;
+      color: #e0e0e0;
+      min-height: 100vh;
+    }
+    header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+      padding: 48px 24px 36px;
+      text-align: center;
+      border-bottom: 1px solid #1e3a5f;
+    }
+    header h1 {
+      font-size: 2.6rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(90deg, #e94560, #0f3460 80%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    header p {
+      margin-top: 10px;
+      color: #8899aa;
+      font-size: 1rem;
+    }
+    .badge {
+      display: inline-block;
+      margin-top: 14px;
+      background: #e94560;
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      text-transform: uppercase;
+    }
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 40px 20px 60px;
+    }
+    .section-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #e94560;
+      margin-bottom: 18px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #1e1e2e;
+    }
+    .endpoints {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 48px;
+    }
+    .endpoint {
+      background: #111827;
+      border: 1px solid #1e2d40;
+      border-radius: 10px;
+      padding: 18px 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      transition: border-color 0.2s, transform 0.15s;
+      text-decoration: none;
+      color: inherit;
+    }
+    .endpoint:hover {
+      border-color: #e94560;
+      transform: translateX(4px);
+    }
+    .method {
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      background: #0f3460;
+      color: #60c0ff;
+      padding: 3px 9px;
+      border-radius: 4px;
+      white-space: nowrap;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+    .endpoint-info { flex: 1; }
+    .endpoint-path {
+      font-family: 'Fira Code', 'Courier New', monospace;
+      font-size: 0.95rem;
+      color: #c5e1f5;
+      font-weight: 600;
+    }
+    .endpoint-desc {
+      font-size: 0.82rem;
+      color: #667788;
+      margin-top: 4px;
+    }
+    .param {
+      display: inline-block;
+      background: #1a2535;
+      border: 1px solid #2a3a50;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.75rem;
+      color: #ffd080;
+      padding: 1px 7px;
+      margin: 4px 3px 0 0;
+    }
+    .try-btn {
+      margin-left: auto;
+      background: #e94560;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .try-btn:hover { background: #c73550; }
+    .playground {
+      background: #111827;
+      border: 1px solid #1e2d40;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 48px;
+    }
+    .playground h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #c5e1f5;
+      margin-bottom: 16px;
+    }
+    .input-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .input-row select, .input-row input {
+      background: #0d1117;
+      border: 1px solid #2a3a50;
+      border-radius: 6px;
+      color: #e0e0e0;
+      padding: 8px 12px;
+      font-size: 0.85rem;
+      outline: none;
+    }
+    .input-row select:focus, .input-row input:focus { border-color: #e94560; }
+    .input-row input { flex: 1; min-width: 180px; }
+    #go-btn {
+      background: #e94560;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 20px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    #go-btn:hover { background: #c73550; }
+    #response-box {
+      margin-top: 16px;
+      background: #0d1117;
+      border: 1px solid #1e2d40;
+      border-radius: 8px;
+      padding: 16px;
+      font-family: monospace;
+      font-size: 0.78rem;
+      color: #9fce80;
+      max-height: 400px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+      display: none;
+    }
+    .status-ok { color: #50fa7b; }
+    .status-err { color: #ff5555; }
+    footer {
+      text-align: center;
+      color: #334455;
+      font-size: 0.8rem;
+      padding: 24px;
+    }
+    @media (max-width: 600px) {
+      header h1 { font-size: 1.8rem; }
+      .endpoint { flex-wrap: wrap; }
+      .try-btn { width: 100%; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>AsianCTV REST API</h1>
+    <p>Lightweight scraper API for Asian dramas, movies &amp; shows</p>
+    <span class="badge">v2.0 &bull; asianctv.net</span>
+  </header>
+
+  <main>
+    <div class="section-title">Available Endpoints</div>
+    <div class="endpoints">
+
+      <div class="endpoint">
+        <span class="method">GET</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/api/home</div>
+          <div class="endpoint-desc">Homepage data — recent episodes, popular dramas, genres &amp; countries</div>
+        </div>
+        <button class="try-btn" onclick="runQuery('/api/home')">Try it</button>
+      </div>
+
+      <div class="endpoint">
+        <span class="method">GET</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/api/drama/<span style="color:#ffd080">:id</span></div>
+          <div class="endpoint-desc">Full drama details — title, description, cast, metadata &amp; episode list</div>
+          <span class="param">:id = drama-slug</span>
+        </div>
+        <button class="try-btn" onclick="runQuery('/api/drama/our-universe-2026')">Try it</button>
+      </div>
+
+      <div class="endpoint">
+        <span class="method">GET</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/api/episodes/<span style="color:#ffd080">:id</span></div>
+          <div class="endpoint-desc">Episode list only for a specific drama</div>
+          <span class="param">:id = drama-slug</span>
+        </div>
+        <button class="try-btn" onclick="runQuery('/api/episodes/our-universe-2026')">Try it</button>
+      </div>
+
+      <div class="endpoint">
+        <span class="method">GET</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/api/stream/<span style="color:#ffd080">:episodeId</span></div>
+          <div class="endpoint-desc">Streaming links for an episode — iframe URL + all available servers</div>
+          <span class="param">:episodeId = drama-slug-episode-N</span>
+        </div>
+        <button class="try-btn" onclick="runQuery('/api/stream/our-universe-2026-episode-12')">Try it</button>
+      </div>
+
+      <div class="endpoint">
+        <span class="method">GET</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/api/search</div>
+          <div class="endpoint-desc">Search for dramas or stars by keyword</div>
+          <span class="param">?q=keyword</span>
+          <span class="param">?type=movies|stars</span>
+        </div>
+        <button class="try-btn" onclick="runQuery('/api/search?q=love&type=movies')">Try it</button>
+      </div>
+
+      <div class="endpoint">
+        <span class="method">GET</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/api/genre/<span style="color:#ffd080">:genre</span></div>
+          <div class="endpoint-desc">Browse dramas by genre</div>
+          <span class="param">:genre = romance, action, comedy...</span>
+          <span class="param">?page=1</span>
+        </div>
+        <button class="try-btn" onclick="runQuery('/api/genre/romance')">Try it</button>
+      </div>
+
+      <div class="endpoint">
+        <span class="method">GET</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/api/country/<span style="color:#ffd080">:country</span></div>
+          <div class="endpoint-desc">Browse dramas by country/type</div>
+          <span class="param">:country = korean-drama, japanese-drama...</span>
+          <span class="param">?page=1</span>
+        </div>
+        <button class="try-btn" onclick="runQuery('/api/country/korean-drama')">Try it</button>
+      </div>
+
+      <div class="endpoint">
+        <span class="method">GET</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/api/list</div>
+          <div class="endpoint-desc">Full alphabetical drama list</div>
+          <span class="param">?char=a-z</span>
+        </div>
+        <button class="try-btn" onclick="runQuery('/api/list?char=k')">Try it</button>
+      </div>
+
+    </div>
+
+    <div class="section-title">Live Playground</div>
+    <div class="playground">
+      <h3>Try any endpoint</h3>
+      <div class="input-row">
+        <select id="route-select" onchange="updateInput()">
+          <option value="/api/home">/api/home</option>
+          <option value="/api/drama/">/api/drama/:id</option>
+          <option value="/api/episodes/">/api/episodes/:id</option>
+          <option value="/api/stream/">/api/stream/:episodeId</option>
+          <option value="/api/search?q=">/api/search?q=</option>
+          <option value="/api/genre/">/api/genre/:genre</option>
+          <option value="/api/country/">/api/country/:country</option>
+          <option value="/api/list">/api/list</option>
+        </select>
+        <input type="text" id="param-input" placeholder="Add param..." />
+        <button id="go-btn" onclick="sendRequest()">Send</button>
+      </div>
+      <div id="response-box"></div>
+    </div>
+
+    <div class="section-title">Example Response — Stream</div>
+    <div style="background:#0d1117;border:1px solid #1e2d40;border-radius:8px;padding:16px;font-family:monospace;font-size:0.78rem;color:#9fce80;white-space:pre-wrap;">
+{
+  "success": true,
+  "results": {
+    "title": "Our Universe (2026) Episode 12",
+    "iframeUrl": "https://vidbasic.top/embed/abc123",
+    "servers": [
+      { "name": "Standard Server", "url": "https://vidbasic.top/embed/abc123", "isDefault": true }
+    ],
+    "defaultServer": { "name": "Standard Server", "url": "https://vidbasic.top/embed/abc123", "isDefault": true },
+    "meta": {
+      "image": "https://...",
+      "episodeNumber": "12",
+      "duration": "PT70M",
+      "datePublished": "2026-03-12"
+    }
+  }
+}</div>
+  </main>
+
+  <footer>AsianCTV API &mdash; Powered by Express &amp; Cheerio</footer>
+
+  <script>
+    function updateInput() {
+      const sel = document.getElementById('route-select').value;
+      const inp = document.getElementById('param-input');
+      if (sel === '/api/home' || sel === '/api/list') {
+        inp.value = '';
+        inp.placeholder = 'No param needed';
+      } else {
+        inp.placeholder = 'Enter value...';
+        inp.value = '';
+      }
+    }
+
+    function runQuery(url) {
+      const box = document.getElementById('response-box');
+      box.style.display = 'block';
+      box.textContent = 'Loading...';
+      box.className = '';
+      fetch(url)
+        .then(r => r.json())
+        .then(d => {
+          box.textContent = JSON.stringify(d, null, 2);
+          box.className = 'status-ok';
+        })
+        .catch(e => {
+          box.textContent = 'Error: ' + e.message;
+          box.className = 'status-err';
+        });
+    }
+
+    function sendRequest() {
+      const base = document.getElementById('route-select').value;
+      const param = document.getElementById('param-input').value.trim();
+      runQuery(base + param);
+    }
+  </script>
+</body>
+</html>

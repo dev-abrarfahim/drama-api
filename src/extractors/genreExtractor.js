@@ -2,9 +2,9 @@ import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { BASE_URL, HEADERS, normalizeUrl, extractDramaId } from '../configs/constants.js';
 
-export const scrapeSearch = async (keyword, type = 'movies') => {
+export const scrapeGenre = async (genre, page = 1) => {
   try {
-    const url = `${BASE_URL}search?type=${encodeURIComponent(type)}&keyword=${encodeURIComponent(keyword)}`;
+    const url = `${BASE_URL}genre/${encodeURIComponent(genre)}${page > 1 ? `?page=${page}` : ''}`;
     const { data } = await axios.get(url, { headers: HEADERS, timeout: 15000 });
     const $ = cheerio.load(data);
 
@@ -22,8 +22,10 @@ export const scrapeSearch = async (keyword, type = 'movies') => {
       });
     });
 
-    return results;
+    const hasNextPage = $('a.next, .pagination .next, a[rel="next"]').length > 0;
+
+    return { genre, page, hasNextPage, results };
   } catch (error) {
-    throw new Error(`Failed to scrape search: ${error.message}`);
+    throw new Error(`Failed to scrape genre "${genre}": ${error.message}`);
   }
 };

@@ -1,59 +1,68 @@
-/**
- * src/extractors/streamExtractor.js
- * 
- * This file contains the logic to scrape the video streaming page for a specific episode.
- * It extracts the main video player iframe URL and a list of alternative streaming servers.
- * 
- * External Modules Used:
- * - axios: Used to make the HTTP GET request to fetch the HTML of the streaming page.
- * - cheerio: Used to parse the fetched HTML and extract data using jQuery-like selectors.
- * 
- * Local Modules Used:
- * - constants: Imports the BASE_URL and HEADERS for the request.
- */
-
 import axios from 'axios';
 import * as cheerio from 'cheerio';
-import { BASE_URL, HEADERS } from '../configs/constants.js';
+import { BASE_URL, HEADERS, normalizeUrl } from '../configs/constants.js';
 
-/**
- * Scrapes the streaming iframe and alternative servers for a specific episode.
- * 
- * @param {string} episodeId - The unique identifier of the episode (e.g., 'drama-name-episode-1').
- * @returns {Object} An object containing the main iframeUrl and an array of alternative servers.
- */
 export const scrapeStream = async (episodeId) => {
   try {
-    // 1. Construct the full URL for the episode's streaming page
     const url = `${BASE_URL}${episodeId}.html`;
-    
-    // 2. Fetch the HTML content
-    const { data } = await axios.get(url, { headers: HEADERS });
-    
-    // 3. Load the HTML into Cheerio
+    const { data } = await axios.get(url, { headers: HEADERS, timeout: 15000 });
     const $ = cheerio.load(data);
 
-    // --- Extract Main Video Player ---
-    // Find the <iframe> tag and get its 'src' attribute, which contains the video player URL
-    const iframeUrl = $('iframe').attr('src');
-    
-    // If no iframe is found, throw an error because the video cannot be played
-    if (!iframeUrl) throw new Error('Iframe URL not found');
+    const rawIframe = $('iframe').attr('src');
+    const iframeUrl = normalizeUrl(rawIframe);
 
-    // --- Extract Alternative Servers ---
+    if (!iframeUrl) throw new Error('No streaming source found for this episode');
+
     const servers = [];
-    // Find all buttons with the class 'server-btn' which represent different video hosts
-    $('button.server-btn').each((i, el) => {
-      servers.push({
-        // Extract the server name and remove the play icon (▶) if it exists
-        name: $(el).text().replace('▶', '').trim(),
-        // Extract the video URL for this specific server from the 'data-src' attribute
-        url: $(el).attr('data-src')
-      });
+    $('li[data-video]').each((i, el) => {
+      const serverName = $(el).clone().children().remove().end().text().trim()
+        || $(el).find('span:not(.type)').text().trim()
+        || `Server ${i + 1}`;
+      const videoUrl = normalizeUrl($(el).attr('data-video'));
+      const isDefault = $(el).hasClass('selected') || $(el).hasClass('active');
+      if (videoUrl) {
+        servers.push({
+          name: serverName.replace(/choose this server/i, '').trim(),
+          url: videoUrl,
+          isDefault
+        });
+      }
     });
 
-    // Return the main iframe URL and the list of alternative servers
-    return { iframeUrl, servers };
+    const title = $('h1').first().text().trim();
+
+    const metaImage = $('meta[property="og:image"]').attr('content');
+    const metaDesc = $('meta[property="og:description"]').attr('content');
+
+    let episodeInfo = {};
+    try {
+      $('script[type="application/ld+json"]').each((i, el) => {
+        const json = JSON.parse($(el).html() || '{}');
+        if (json['@type'] === 'TVEpisode') {
+          episodeInfo = {
+            episodeNumber: json.episodeNumber,
+            duration: json.duration,
+            datePublished: json.datePublished,
+            description: json.description,
+            image: json.image
+          };
+        }
+      });
+    } catch (_) {}
+
+    return {
+      title,
+      iframeUrl,
+      servers,
+      defaultServer: servers.find(s => s.isDefault) || servers[0] || null,
+      meta: {
+        image: metaImage || episodeInfo.image || null,
+        description: metaDesc || episodeInfo.description || null,
+        episodeNumber: episodeInfo.episodeNumber || null,
+        duration: episodeInfo.duration || null,
+        datePublished: episodeInfo.datePublished || null
+      }
+    };
   } catch (error) {
     throw new Error(`Failed to scrape stream: ${error.message}`);
   }

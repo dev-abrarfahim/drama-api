@@ -1,78 +1,80 @@
-/**
- * src/extractors/dramaExtractor.js
- * 
- * This file contains the logic to scrape the details page of a specific drama.
- * It extracts the title, synopsis, poster image, genres, and the list of available episodes.
- * 
- * External Modules Used:
- * - axios: Used to make the HTTP GET request to fetch the HTML of the drama page.
- * - cheerio: Used to parse the fetched HTML and extract data using jQuery-like selectors.
- * 
- * Local Modules Used:
- * - constants: Imports the BASE_URL and HEADERS for the request.
- */
-
 import axios from 'axios';
 import * as cheerio from 'cheerio';
-import { BASE_URL, HEADERS } from '../configs/constants.js';
+import { BASE_URL, HEADERS, normalizeUrl, extractEpisodeId } from '../configs/constants.js';
 
-/**
- * Scrapes the details and episode list for a specific drama.
- * 
- * @param {string} id - The unique identifier of the drama (e.g., 'turbulent-love-2026').
- * @returns {Object} An object containing the drama's title, description, image, genres, and episodes.
- */
 export const scrapeDrama = async (id) => {
   try {
-    // 1. Construct the full URL for the drama's detail page
-    const url = `${BASE_URL}${id}`;
-    
-    // 2. Fetch the HTML content
-    const { data } = await axios.get(url, { headers: HEADERS });
-    
-    // 3. Load the HTML into Cheerio
+    const url = `${BASE_URL}drama-detail/${id}`;
+    const { data } = await axios.get(url, { headers: HEADERS, timeout: 15000 });
     const $ = cheerio.load(data);
 
-    // --- Extract Basic Info ---
-    // Extract the main title from the <h1> tag
-    const title = $('h1').text().trim();
-    // Extract the description/synopsis and remove the "Synopsis:" prefix text
-    const description = $('.synopsis').text().replace('Synopsis:', '').trim();
-    // Extract the poster image URL (checking lazy-loaded 'data-original' first)
-    const image = $('.drama-thumbnail img').attr('data-original') || $('.drama-thumbnail img').attr('src');
-    
-    // --- Extract Genres ---
-    const genres = [];
-    // Find all links inside elements with the class 'genre' or paragraphs containing "Genre:"
-    $('.genre a, p:contains("Genre:") a').each((i, el) => {
-      genres.push({
-        name: $(el).text().trim(),
-        // Extract the genre ID from the URL
-        id: $(el).attr('href')?.split('/').pop()
-      });
-    });
+    const details = $('div.details');
+    const title = details.find('h1').first().text().trim() || $('h1').first().text().trim();
+    const image = normalizeUrl(details.find('div.img img').attr('src') || details.find('img').first().attr('src'));
+    const otherName = details.find('p.other_name a').text().trim();
 
-    // --- Extract Episodes ---
-    const episodes = [];
-    // Find all list items inside the episode list container ('ul.list')
-    $('ul.list li').each((i, el) => {
-      const a = $(el).find('h3 a');
-      const href = a.attr('href');
-      
-      // If a valid link exists, extract the episode details
-      if (href) {
-        episodes.push({
-          title: a.text().trim(),
-          // Extract the episode ID from the URL (e.g., /drama-episode-1.html -> drama-episode-1)
-          id: href.split('/').pop()?.replace('.html', ''),
-          // Extract the subtitle/episode type (e.g., "SUB" or "DUB")
-          episode: $(el).find('.sub').text().trim() || 'EP'
-        });
+    let description = '';
+    details.find('p').each((i, el) => {
+      const prev = $(el).prev('p');
+      if (prev.find('span').text().trim() === 'Description:') {
+        description = $(el).text().trim();
       }
     });
 
-    // Return the structured drama data
-    return { title, description, image, genres, episodes };
+    const meta = {};
+    details.find('p').each((i, el) => {
+      const span = $(el).find('span').first();
+      const label = span.text().replace(':', '').trim();
+      if (label) {
+        const value = $(el).text().replace(span.text(), '').trim();
+        if (value) meta[label] = value;
+      }
+    });
+
+    const genres = [];
+    const genreText = meta['Genre'] || '';
+    genreText.split(';').forEach(g => {
+      const name = g.trim();
+      if (name) genres.push({ name, id: name.toLowerCase().replace(/\s+/g, '-') });
+    });
+
+    const country = details.find('p a[href*="/country/"]').first().text().trim() || meta['Country'] || '';
+    const countryId = (details.find('p a[href*="/country/"]').first().attr('href') || '').split('/').pop();
+
+    const episodes = [];
+    $('ul.list-episode-item-2 li').each((i, el) => {
+      const a = $(el).find('a.img');
+      if (!a.length) return;
+      const href = a.attr('href') || '';
+      const epTitle = a.find('h3.title').text().trim();
+      const type = a.find('.type').text().trim() || 'SUB';
+      const date = a.find('span:not(.type):not(.title)').last().text().trim();
+      episodes.push({
+        title: epTitle,
+        episodeId: extractEpisodeId(href),
+        type,
+        date
+      });
+    });
+
+    return {
+      title,
+      otherName,
+      description,
+      image,
+      genres,
+      country,
+      countryId,
+      episodes: meta['Episodes'] || String(episodes.length),
+      duration: meta['Duration'] || '',
+      contentRating: meta['Content Rating'] || '',
+      airsOn: meta['Airs On'] || '',
+      producer: meta['Producer'] || '',
+      director: meta['Director'] || '',
+      status: meta['Status'] || '',
+      released: meta['Released'] || '',
+      episodeList: episodes
+    };
   } catch (error) {
     throw new Error(`Failed to scrape drama: ${error.message}`);
   }

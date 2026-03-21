@@ -1,48 +1,24 @@
-/**
- * src/controllers/dramaController.js
- * 
- * This file contains the controller functions for the API routes. Controllers act as the 
- * "middlemen" between the incoming HTTP requests (routes) and the data extraction logic (extractors).
- * They handle extracting parameters from the request, calling the appropriate scraper, 
- * and sending the formatted JSON response back to the client.
- * 
- * Local Modules Used:
- * - homeExtractor: Scrapes homepage data.
- * - dramaExtractor: Scrapes drama details and episodes.
- * - searchExtractor: Scrapes search results.
- * - streamExtractor: Scrapes video streaming links.
- */
-
 import { scrapeHome } from '../extractors/homeExtractor.js';
 import { scrapeDrama } from '../extractors/dramaExtractor.js';
 import { scrapeSearch } from '../extractors/searchExtractor.js';
 import { scrapeStream } from '../extractors/streamExtractor.js';
+import { scrapeGenre } from '../extractors/genreExtractor.js';
+import { scrapeCountry } from '../extractors/countryExtractor.js';
+import { scrapeDramaList } from '../extractors/dramaListExtractor.js';
 
-/**
- * Controller for GET /api/home
- * Fetches and returns the homepage data.
- */
 export const getHome = async (req, res, next) => {
   try {
-    // Call the extractor to scrape the homepage
     const results = await scrapeHome();
-    // Send a successful JSON response with the scraped data
     res.json({ success: true, results });
   } catch (error) {
-    // If an error occurs, pass it to the global error handler middleware
     next(error);
   }
 };
 
-/**
- * Controller for GET /api/drama/:id
- * Fetches and returns detailed information about a specific drama.
- */
 export const getDramaInfo = async (req, res, next) => {
   try {
-    // Extract the drama ID from the URL parameters (e.g., /api/drama/my-drama-id)
     const { id } = req.params;
-    // Call the extractor to scrape the drama details
+    if (!id) return res.status(400).json({ success: false, message: 'Drama ID is required' });
     const results = await scrapeDrama(id);
     res.json({ success: true, results });
   } catch (error) {
@@ -50,30 +26,21 @@ export const getDramaInfo = async (req, res, next) => {
   }
 };
 
-/**
- * Controller for GET /api/episodes/:id
- * Fetches and returns only the episodes for a specific drama.
- */
 export const getEpisodes = async (req, res, next) => {
   try {
     const { id } = req.params;
-    // Scrape the drama details, but only return the 'episodes' array from the result
-    const results = await scrapeDrama(id);
-    res.json({ success: true, results: results.episodes });
+    if (!id) return res.status(400).json({ success: false, message: 'Drama ID is required' });
+    const drama = await scrapeDrama(id);
+    res.json({ success: true, results: drama.episodeList });
   } catch (error) {
     next(error);
   }
 };
 
-/**
- * Controller for GET /api/stream/:episodeId
- * Fetches and returns the streaming iframe and server links for a specific episode.
- */
 export const getStreamInfo = async (req, res, next) => {
   try {
-    // Extract the episode ID from the URL parameters
     const { episodeId } = req.params;
-    // Call the extractor to scrape the streaming page
+    if (!episodeId) return res.status(400).json({ success: false, message: 'Episode ID is required' });
     const results = await scrapeStream(episodeId);
     res.json({ success: true, results });
   } catch (error) {
@@ -81,22 +48,45 @@ export const getStreamInfo = async (req, res, next) => {
   }
 };
 
-/**
- * Controller for GET /api/search?q=keyword
- * Searches for dramas based on a keyword.
- */
 export const searchDrama = async (req, res, next) => {
   try {
-    // Extract the search keyword 'q' from the query string (e.g., /api/search?q=love)
-    const { q } = req.query;
-    
-    // Validate that a search query was actually provided
-    if (!q) {
-      return res.status(400).json({ success: false, message: 'Search query is required' });
-    }
+    const { q, type } = req.query;
+    if (!q) return res.status(400).json({ success: false, message: 'Search query (q) is required' });
+    const results = await scrapeSearch(q, type || 'movies');
+    res.json({ success: true, query: q, total: results.length, results });
+  } catch (error) {
+    next(error);
+  }
+};
 
-    // Call the extractor to scrape the search results page
-    const results = await scrapeSearch(q);
+export const getGenre = async (req, res, next) => {
+  try {
+    const { genre } = req.params;
+    const page = parseInt(req.query.page) || 1;
+    if (!genre) return res.status(400).json({ success: false, message: 'Genre is required' });
+    const results = await scrapeGenre(genre, page);
+    res.json({ success: true, results });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getCountry = async (req, res, next) => {
+  try {
+    const { country } = req.params;
+    const page = parseInt(req.query.page) || 1;
+    if (!country) return res.status(400).json({ success: false, message: 'Country is required' });
+    const results = await scrapeCountry(country, page);
+    res.json({ success: true, results });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getDramaList = async (req, res, next) => {
+  try {
+    const { char } = req.query;
+    const results = await scrapeDramaList(char || '');
     res.json({ success: true, results });
   } catch (error) {
     next(error);
