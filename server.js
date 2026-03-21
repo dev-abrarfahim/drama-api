@@ -26,8 +26,8 @@ dotenv.config();
 // Initialize the Express application
 const app = express();
 
-// Define the port the server will run on. Defaults to 3000 if not specified in the environment.
-const PORT = process.env.PORT || 3000;
+// Define the port the server will run on. Defaults to 5000 for Replit compatibility.
+const PORT = process.env.PORT || 5000;
 
 // --- Middleware Setup ---
 
