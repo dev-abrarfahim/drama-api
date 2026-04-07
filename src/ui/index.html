@@ -3,230 +3,430 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AsianCTV API</title>
+  <title>Drama Scraper API</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      background: #0d0d0d;
-      color: #e0e0e0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
       min-height: 100vh;
+      line-height: 1.6;
     }
     header {
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
-      padding: 48px 24px 36px;
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      padding: 3rem 2rem 2rem;
       text-align: center;
-      border-bottom: 1px solid #1e3a5f;
+      border-bottom: 1px solid #334155;
     }
     header h1 {
-      font-size: 2.6rem;
+      font-size: 2.5rem;
       font-weight: 800;
       letter-spacing: -0.5px;
-      background: linear-gradient(90deg, #e94560, #0f3460 80%);
+      background: linear-gradient(90deg, #60a5fa, #8b5cf6);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+      margin-bottom: 0.5rem;
     }
     header p {
-      margin-top: 10px;
-      color: #8899aa;
-      font-size: 1rem;
+      color: #94a3b8;
+      font-size: 1.1rem;
+      max-width: 600px;
+      margin: 0 auto 1rem;
     }
     .badge {
       display: inline-block;
-      margin-top: 14px;
-      background: #e94560;
-      color: #fff;
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 1px;
-      padding: 4px 12px;
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+      color: white;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 0.3rem 1rem;
       border-radius: 20px;
-      text-transform: uppercase;
+      margin-top: 0.5rem;
     }
-    main {
-      max-width: 960px;
+    .container {
+      max-width: 1000px;
       margin: 0 auto;
-      padding: 40px 20px 60px;
+      padding: 2rem;
     }
     .section-title {
-      font-size: 0.75rem;
+      font-size: 0.9rem;
       font-weight: 700;
-      letter-spacing: 2px;
+      letter-spacing: 1px;
       text-transform: uppercase;
-      color: #e94560;
-      margin-bottom: 18px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid #1e1e2e;
+      color: #60a5fa;
+      margin: 2.5rem 0 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid #334155;
+    }
+    .category-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #c7d2fe;
+      margin: 2rem 0 1rem;
+      padding-left: 0.5rem;
+      border-left: 3px solid #60a5fa;
     }
     .endpoints {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-bottom: 48px;
+      display: grid;
+      gap: 1rem;
+      margin-bottom: 3rem;
     }
     .endpoint {
-      background: #111827;
-      border: 1px solid #1e2d40;
+      background: #1e293b;
+      border: 1px solid #334155;
       border-radius: 10px;
-      padding: 18px 20px;
+      padding: 1.25rem;
       display: flex;
       align-items: flex-start;
-      gap: 16px;
-      transition: border-color 0.2s, transform 0.15s;
-      text-decoration: none;
-      color: inherit;
+      gap: 1rem;
+      transition: all 0.2s ease;
     }
     .endpoint:hover {
-      border-color: #e94560;
-      transform: translateX(4px);
+      border-color: #60a5fa;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
     .method {
-      font-size: 0.65rem;
+      font-size: 0.7rem;
       font-weight: 800;
       letter-spacing: 1px;
-      background: #0f3460;
-      color: #60c0ff;
-      padding: 3px 9px;
+      background: #1e40af;
+      color: #93c5fd;
+      padding: 0.25rem 0.75rem;
       border-radius: 4px;
       white-space: nowrap;
-      margin-top: 2px;
+      margin-top: 0.1rem;
       flex-shrink: 0;
     }
     .endpoint-info { flex: 1; }
     .endpoint-path {
-      font-family: 'Fira Code', 'Courier New', monospace;
+      font-family: 'SF Mono', 'Fira Code', monospace;
       font-size: 0.95rem;
-      color: #c5e1f5;
+      color: #e2e8f0;
       font-weight: 600;
+      margin-bottom: 0.25rem;
     }
     .endpoint-desc {
-      font-size: 0.82rem;
-      color: #667788;
-      margin-top: 4px;
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-bottom: 0.5rem;
+    }
+    .params {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
     }
     .param {
-      display: inline-block;
-      background: #1a2535;
-      border: 1px solid #2a3a50;
+      background: #334155;
+      border: 1px solid #475569;
       border-radius: 4px;
       font-family: monospace;
       font-size: 0.75rem;
-      color: #ffd080;
-      padding: 1px 7px;
-      margin: 4px 3px 0 0;
+      color: #fbbf24;
+      padding: 0.2rem 0.6rem;
     }
     .try-btn {
-      margin-left: auto;
-      background: #e94560;
-      color: #fff;
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+      color: white;
       border: none;
       border-radius: 6px;
-      padding: 6px 14px;
-      font-size: 0.75rem;
+      padding: 0.5rem 1rem;
+      font-size: 0.8rem;
       font-weight: 600;
       cursor: pointer;
       white-space: nowrap;
       flex-shrink: 0;
-      transition: background 0.2s;
+      transition: all 0.2s;
     }
-    .try-btn:hover { background: #c73550; }
+    .try-btn:hover {
+      background: linear-gradient(90deg, #2563eb, #7c3aed);
+      transform: scale(1.05);
+    }
     .playground {
-      background: #111827;
-      border: 1px solid #1e2d40;
+      background: #1e293b;
+      border: 1px solid #334155;
       border-radius: 12px;
-      padding: 24px;
-      margin-bottom: 48px;
+      padding: 1.5rem;
+      margin-bottom: 3rem;
     }
     .playground h3 {
-      font-size: 1rem;
+      font-size: 1.1rem;
       font-weight: 700;
-      color: #c5e1f5;
-      margin-bottom: 16px;
+      color: #e2e8f0;
+      margin-bottom: 1rem;
     }
     .input-row {
       display: flex;
-      gap: 10px;
+      gap: 0.75rem;
       flex-wrap: wrap;
+      margin-bottom: 1rem;
     }
     .input-row select, .input-row input {
-      background: #0d1117;
-      border: 1px solid #2a3a50;
+      background: #0f172a;
+      border: 1px solid #475569;
       border-radius: 6px;
-      color: #e0e0e0;
-      padding: 8px 12px;
-      font-size: 0.85rem;
+      color: #e2e8f0;
+      padding: 0.6rem 0.8rem;
+      font-size: 0.9rem;
       outline: none;
+      flex: 1;
+      min-width: 200px;
     }
-    .input-row select:focus, .input-row input:focus { border-color: #e94560; }
-    .input-row input { flex: 1; min-width: 180px; }
+    .input-row select:focus, .input-row input:focus {
+      border-color: #60a5fa;
+      box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
+    }
     #go-btn {
-      background: #e94560;
-      color: #fff;
+      background: linear-gradient(90deg, #10b981, #059669);
+      color: white;
       border: none;
       border-radius: 6px;
-      padding: 8px 20px;
+      padding: 0.6rem 1.5rem;
       font-weight: 700;
       cursor: pointer;
-      font-size: 0.85rem;
+      font-size: 0.9rem;
+      transition: all 0.2s;
     }
-    #go-btn:hover { background: #c73550; }
+    #go-btn:hover {
+      background: linear-gradient(90deg, #059669, #047857);
+      transform: scale(1.05);
+    }
     #response-box {
-      margin-top: 16px;
-      background: #0d1117;
-      border: 1px solid #1e2d40;
+      margin-top: 1rem;
+      background: #0f172a;
+      border: 1px solid #334155;
       border-radius: 8px;
-      padding: 16px;
-      font-family: monospace;
-      font-size: 0.78rem;
-      color: #9fce80;
+      padding: 1rem;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.8rem;
+      color: #86efac;
       max-height: 400px;
       overflow-y: auto;
       white-space: pre-wrap;
       word-break: break-all;
       display: none;
     }
-    .status-ok { color: #50fa7b; }
-    .status-err { color: #ff5555; }
+    .status {
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .status.ok { color: #10b981; }
+    .status.error { color: #ef4444; }
     footer {
       text-align: center;
-      color: #334455;
-      font-size: 0.8rem;
-      padding: 24px;
+      color: #64748b;
+      font-size: 0.85rem;
+      padding: 2rem;
+      border-top: 1px solid #334155;
+      margin-top: 2rem;
     }
-    @media (max-width: 600px) {
-      header h1 { font-size: 1.8rem; }
-      .endpoint { flex-wrap: wrap; }
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+    .feature {
+      background: #1e293b;
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+    }
+    .feature h4 {
+      color: #60a5fa;
+      margin-bottom: 0.5rem;
+    }
+    .feature p {
+      font-size: 0.85rem;
+      color: #94a3b8;
+    }
+    @media (max-width: 768px) {
+      .container { padding: 1rem; }
+      header { padding: 2rem 1rem 1.5rem; }
+      header h1 { font-size: 2rem; }
+      .endpoint { flex-direction: column; gap: 0.75rem; }
       .try-btn { width: 100%; text-align: center; }
+      .input-row select, .input-row input { min-width: 100%; }
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>AsianCTV REST API</h1>
-    <p>Lightweight scraper API for Asian dramas, movies &amp; shows</p>
-    <span class="badge">v2.0 &bull; asianctv.net</span>
+    <h1>Drama Scraper API</h1>
+    <p>A production-ready REST API for scraping Asian dramas, movies, and shows with caching, error handling, and consistent response formats.</p>
+    <div class="badge">Production Ready • v2.1 • Powered by Express & Cheerio</div>
   </header>
 
-  <main>
+  <div class="container">
+    <div class="section-title">API Features</div>
+    <div class="features">
+      <div class="feature">
+        <h4>⚡ Performance</h4>
+        <p>Intelligent caching with configurable TTLs reduces repeated requests and improves response times.</p>
+      </div>
+      <div class="feature">
+        <h4>🛡️ Reliability</h4>
+        <p>Comprehensive error handling, validation, and retry logic for robust operation.</p>
+      </div>
+      <div class="feature">
+        <h4>📊 Consistent Format</h4>
+        <p>All endpoints return standardized JSON with success/error status, messages, and metadata.</p>
+      </div>
+      <div class="feature">
+        <h4>🔍 Full Coverage</h4>
+        <p>12 endpoints covering home, recent, popular, genres, countries, search, and drama details.</p>
+      </div>
+    </div>
+
     <div class="section-title">Available Endpoints</div>
     <div class="endpoints">
 
+      <!-- Home Section -->
+      <div class="category-title">Home & Overview</div>
+      
       <div class="endpoint">
         <span class="method">GET</span>
         <div class="endpoint-info">
           <div class="endpoint-path">/api/home</div>
-          <div class="endpoint-desc">Homepage data — recent episodes, popular dramas, genres &amp; countries</div>
+          <div class="endpoint-desc">Homepage data including recent episodes, popular dramas, genres, and countries.</div>
+          <div class="params">
+            <span class="param">Cache: 2 minutes</span>
+          </div>
         </div>
         <button class="try-btn" onclick="runQuery('/api/home')">Try it</button>
       </div>
 
+      <!-- Recent Episodes -->
+      <div class="category-title">Recent Episodes</div>
+      
       <div class="endpoint">
         <span class="method">GET</span>
         <div class="endpoint-info">
-          <div class="endpoint-path">/api/drama/<span style="color:#ffd080">:id</span></div>
-          <div class="endpoint-desc">Full drama details — title, description, cast, metadata &amp; episode list</div>
-          <span class="param">:id = drama-slug</span>
+          <div class="endpoint-path">/api/recent/:category</div>
+          <div class="endpoint-desc">Recent episodes by category (drama, movies, kshow).</div>
+          <div class="params">
+            <span class="param">:category = drama|movies|kshow</span>
+            <span class="param">?page=1</span>
+            <span class="param">Cache: 30 seconds</span>
+          </div>
+        </div>
+        <button class="try-btn" onclick="runQuery('/api/recent/drama')">Try it</button>
+      </div>
+
+      <!-- Recently Added Dramas -->
+      <div class="category-title">Recently Added</div>
+      
+      <div class="endpoint">
+        <span class="method">GET</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/api/recently-added</div>
+          <div class="endpoint-desc">Paginated list of recently added dramas.</div>
+          <div class="params">
+            <span class="param">?page=1</span>
+            <span class="param">Cache: 1 minute</span>
+          </div>
+        </div>
+        <button class="try-btn" onclick="runQuery('/api/recently-added')">Try it</button>
+      </div>
+
+      <!-- Popular Ongoing -->
+      <div class="category-title">Popular Ongoing</div>
+      
+      <div class="endpoint">
+        <span class="method">GET</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/api/popular-ongoing-drama</div>
+          <div class="endpoint-desc">Paginated list of popular ongoing dramas.</div>
+          <div class="params">
+            <span class="param">?page=1</span>
+            <span class="param">Cache: 1 minute</span>
+          </div>
+        </div>
+        <button class="try-btn" onclick="runQuery('/api/popular-ongoing-drama')">Try it</button>
+      </div>
+
+      <!-- Most Popular -->
+      <div class="category-title">Most Popular</div>
+      
+      <div class="endpoint">
+        <span class="method">GET</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/api/most-popular</div>
+          <div class="endpoint-desc">Paginated list of most popular dramas.</div>
+          <div class="params">
+            <span class="param">?page=1</span>
+            <span class="param">Cache: 5 minutes</span>
+          </div>
+        </div>
+        <button class="try-btn" onclick="runQuery('/api/most-popular')">Try it</button>
+      </div>
+
+      <!-- Genres -->
+      <div class="category-title">Genres</div>
+      
+      <div class="endpoint">
+        <span class="method">GET</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/api/genre/:genre</div>
+          <div class="endpoint-desc">Browse dramas by genre (romance, action, comedy, etc.)</div>
+          <div class="params">
+            <span class="param">:genre = romance|action|comedy|...</span>
+            <span class="param">?page=1</span>
+            <span class="param">Cache: 1 minute</span>
+          </div>
+        </div>
+        <button class="try-btn" onclick="runQuery('/api/genre/romance')">Try it</button>
+      </div>
+
+      <!-- Countries -->
+      <div class="category-title">Countries & Types</div>
+      
+      <div class="endpoint">
+        <span class="method">GET</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/api/country/:country</div>
+          <div class="endpoint-desc">Browse dramas by country/type (korean-drama, japanese-drama, etc.)</div>
+          <div class="params">
+            <span class="param">:country = korean-drama|japanese-drama|...</span>
+            <span class="param">?page=1</span>
+            <span class="param">Cache: 1 minute</span>
+          </div>
+        </div>
+        <button class="try-btn" onclick="runQuery('/api/country/korean-drama')">Try it</button>
+      </div>
+
+      <!-- Search -->
+      <div class="category-title">Search</div>
+      
+      <div class="endpoint">
+        <span class="method">GET</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/api/search</div>
+          <div class="endpoint-desc">Search for dramas or stars by keyword.</div>
+          <div class="params">
+            <span class="param">?q=keyword (required)</span>
+            <span class="param">?type=movies|stars (optional)</span>
+            <span class="param">Cache: 30 seconds</span>
+          </div>
+        </div>
+        <button class="try-btn" onclick="runQuery('/api/search?q=love&type=movies')">Try it</button>
+      </div>
+
+      <!-- Drama Information -->
+      <div class="category-title">Drama Information</div>
+      
+      <div class="endpoint">
+        <span class="method">GET</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/api/drama/:id</div>
+          <div class="endpoint-desc">Full drama details including title, description, cast, metadata, and episode list.</div>
+          <div class="params">
+            <span class="param">:id = drama-slug</span>
+            <span class="param">Cache: 5 minutes</span>
+          </div>
         </div>
         <button class="try-btn" onclick="runQuery('/api/drama/our-universe-2026')">Try it</button>
       </div>
@@ -234,9 +434,12 @@
       <div class="endpoint">
         <span class="method">GET</span>
         <div class="endpoint-info">
-          <div class="endpoint-path">/api/episodes/<span style="color:#ffd080">:id</span></div>
-          <div class="endpoint-desc">Episode list only for a specific drama</div>
-          <span class="param">:id = drama-slug</span>
+          <div class="endpoint-path">/api/episodes/:id</div>
+          <div class="endpoint-desc">Episode list only for a specific drama (lighter than full drama endpoint).</div>
+          <div class="params">
+            <span class="param">:id = drama-slug</span>
+            <span class="param">Cache: 5 minutes</span>
+          </div>
         </div>
         <button class="try-btn" onclick="runQuery('/api/episodes/our-universe-2026')">Try it</button>
       </div>
@@ -244,54 +447,44 @@
       <div class="endpoint">
         <span class="method">GET</span>
         <div class="endpoint-info">
-          <div class="endpoint-path">/api/stream/<span style="color:#ffd080">:episodeId</span></div>
-          <div class="endpoint-desc">Streaming links for an episode — iframe URL + all available servers</div>
-          <span class="param">:episodeId = drama-slug-episode-N</span>
+          <div class="endpoint-path">/api/stream/:episodeId</div>
+          <div class="endpoint-desc">Streaming links for an episode including iframe URL and all available servers.</div>
+          <div class="params">
+            <span class="param">:episodeId = drama-slug-episode-N</span>
+            <span class="param">Cache: 30 seconds</span>
+          </div>
         </div>
         <button class="try-btn" onclick="runQuery('/api/stream/our-universe-2026-episode-12')">Try it</button>
       </div>
 
-      <div class="endpoint">
-        <span class="method">GET</span>
-        <div class="endpoint-info">
-          <div class="endpoint-path">/api/search</div>
-          <div class="endpoint-desc">Search for dramas or stars by keyword</div>
-          <span class="param">?q=keyword</span>
-          <span class="param">?type=movies|stars</span>
-        </div>
-        <button class="try-btn" onclick="runQuery('/api/search?q=love&type=movies')">Try it</button>
-      </div>
-
-      <div class="endpoint">
-        <span class="method">GET</span>
-        <div class="endpoint-info">
-          <div class="endpoint-path">/api/genre/<span style="color:#ffd080">:genre</span></div>
-          <div class="endpoint-desc">Browse dramas by genre</div>
-          <span class="param">:genre = romance, action, comedy...</span>
-          <span class="param">?page=1</span>
-        </div>
-        <button class="try-btn" onclick="runQuery('/api/genre/romance')">Try it</button>
-      </div>
-
-      <div class="endpoint">
-        <span class="method">GET</span>
-        <div class="endpoint-info">
-          <div class="endpoint-path">/api/country/<span style="color:#ffd080">:country</span></div>
-          <div class="endpoint-desc">Browse dramas by country/type</div>
-          <span class="param">:country = korean-drama, japanese-drama...</span>
-          <span class="param">?page=1</span>
-        </div>
-        <button class="try-btn" onclick="runQuery('/api/country/korean-drama')">Try it</button>
-      </div>
-
+      <!-- Miscellaneous -->
+      <div class="category-title">Miscellaneous</div>
+      
       <div class="endpoint">
         <span class="method">GET</span>
         <div class="endpoint-info">
           <div class="endpoint-path">/api/list</div>
-          <div class="endpoint-desc">Full alphabetical drama list</div>
-          <span class="param">?char=a-z</span>
+          <div class="endpoint-desc">Full alphabetical drama list, optionally filtered by first letter.</div>
+          <div class="params">
+            <span class="param">?char=a-z (optional)</span>
+            <span class="param">Cache: 5 minutes</span>
+          </div>
         </div>
         <button class="try-btn" onclick="runQuery('/api/list?char=k')">Try it</button>
+      </div>
+
+      <div class="endpoint">
+        <span class="method">GET</span>
+        <div class="endpoint-info">
+          <div class="endpoint-path">/api/section/:name</div>
+          <div class="endpoint-desc">Generic endpoint for any section (recently-added, popular-ongoing-drama, most-popular).</div>
+          <div class="params">
+            <span class="param">:name = recently-added|popular-ongoing-drama|most-popular</span>
+            <span class="param">?page=1</span>
+            <span class="param">Cache: 1 minute</span>
+          </div>
+        </div>
+        <button class="try-btn" onclick="runQuery('/api/section/recently-added')">Try it</button>
       </div>
 
     </div>
@@ -302,78 +495,120 @@
       <div class="input-row">
         <select id="route-select" onchange="updateInput()">
           <option value="/api/home">/api/home</option>
-          <option value="/api/drama/">/api/drama/:id</option>
-          <option value="/api/episodes/">/api/episodes/:id</option>
-          <option value="/api/stream/">/api/stream/:episodeId</option>
-          <option value="/api/search?q=">/api/search?q=</option>
-          <option value="/api/genre/">/api/genre/:genre</option>
-          <option value="/api/country/">/api/country/:country</option>
-          <option value="/api/list">/api/list</option>
+          <option value="/api/recent/drama">/api/recent/:category</option>
+          <option value="/api/recently-added">/api/recently-added</option>
+          <option value="/api/popular-ongoing-drama">/api/popular-ongoing-drama</option>
+          <option value="/api/most-popular">/api/most-popular</option>
+          <option value="/api/genre/romance">/api/genre/:genre</option>
+          <option value="/api/country/korean-drama">/api/country/:country</option>
+          <option value="/api/search?q=love">/api/search</option>
+          <option value="/api/drama/our-universe-2026">/api/drama/:id</option>
+          <option value="/api/episodes/our-universe-2026">/api/episodes/:id</option>
+          <option value="/api/stream/our-universe-2026-episode-12">/api/stream/:episodeId</option>
+          <option value="/api/list?char=k">/api/list</option>
+          <option value="/api/section/recently-added">/api/section/:name</option>
         </select>
-        <input type="text" id="param-input" placeholder="Add param..." />
-        <button id="go-btn" onclick="sendRequest()">Send</button>
+        <input type="text" id="url-input" placeholder="Or enter custom URL..." value="/api/home">
+        <button id="go-btn" onclick="executeQuery()">Send Request</button>
       </div>
       <div id="response-box"></div>
     </div>
 
-    <div class="section-title">Example Response — Stream</div>
-    <div style="background:#0d1117;border:1px solid #1e2d40;border-radius:8px;padding:16px;font-family:monospace;font-size:0.78rem;color:#9fce80;white-space:pre-wrap;">
+    <div class="section-title">Response Format</div>
+    <div class="playground">
+      <h3>Standard JSON Response</h3>
+      <pre style="background: #0f172a; padding: 1rem; border-radius: 6px; font-size: 0.8rem; color: #86efac; overflow-x: auto;">
 {
   "success": true,
-  "results": {
-    "title": "Our Universe (2026) Episode 12",
-    "iframeUrl": "https://vidbasic.top/embed/abc123",
-    "servers": [
-      { "name": "Standard Server", "url": "https://vidbasic.top/embed/abc123", "isDefault": true }
-    ],
-    "defaultServer": { "name": "Standard Server", "url": "https://vidbasic.top/embed/abc123", "isDefault": true },
-    "meta": {
-      "image": "https://...",
-      "episodeNumber": "12",
-      "duration": "PT70M",
-      "datePublished": "2026-03-12"
-    }
+  "message": "Success message",
+  "data": { ... },
+  "pagination": {
+    "currentPage": 1,
+    "totalPages": 10,
+    "hasNext": true,
+    "hasPrev": false
+  },
+  "metadata": {
+    "cached": false,
+    "timestamp": "2026-04-06T14:20:22.462Z"
   }
-}</div>
-  </main>
+}</pre>
+      <p style="margin-top: 1rem; color: #94a3b8; font-size: 0.9rem;">
+        All endpoints follow this consistent format. Error responses include <code>"success": false</code> and an <code>"error"</code> field.
+      </p>
+    </div>
 
-  <footer>AsianCTV API &mdash; Powered by Express &amp; Cheerio</footer>
+    <footer>
+      <p>Drama Scraper API &copy; 2026 • Built with Express.js and Cheerio</p>
+      <p style="margin-top: 0.5rem; font-size: 0.8rem;">
+        This API scrapes publicly available data for educational purposes.
+        All data is cached to reduce server load and improve performance.
+      </p>
+    </footer>
+  </div>
 
   <script>
+    function runQuery(url) {
+      document.getElementById('url-input').value = url;
+      executeQuery();
+    }
+
     function updateInput() {
-      const sel = document.getElementById('route-select').value;
-      const inp = document.getElementById('param-input');
-      if (sel === '/api/home' || sel === '/api/list') {
-        inp.value = '';
-        inp.placeholder = 'No param needed';
-      } else {
-        inp.placeholder = 'Enter value...';
-        inp.value = '';
+      const select = document.getElementById('route-select');
+      document.getElementById('url-input').value = select.value;
+    }
+
+    async function executeQuery() {
+      const urlInput = document.getElementById('url-input');
+      let url = urlInput.value.trim();
+      
+      // Ensure URL starts with /api
+      if (!url.startsWith('/')) {
+        url = '/api/' + url;
+      }
+      if (!url.startsWith('/api/')) {
+        url = '/api' + (url.startsWith('/') ? url : '/' + url);
+      }
+      
+      const responseBox = document.getElementById('response-box');
+      responseBox.style.display = 'block';
+      responseBox.innerHTML = '<div class="status">⏳ Sending request to ' + url + '...</div>';
+      
+      try {
+        const startTime = Date.now();
+        const response = await fetch(url);
+        const endTime = Date.now();
+        const duration = endTime - startTime;
+        
+        const statusClass = response.ok ? 'ok' : 'error';
+        const statusText = response.ok ? '✅ Success' : '❌ Error';
+        
+        let data;
+        try {
+          data = await response.json();
+        } catch (e) {
+          data = { text: await response.text() };
+        }
+        
+        const formatted = JSON.stringify(data, null, 2);
+        responseBox.innerHTML = `
+          <div class="status ${statusClass}">${statusText} • ${response.status} ${response.statusText} • ${duration}ms</div>
+          <pre>${formatted}</pre>
+        `;
+      } catch (error) {
+        responseBox.innerHTML = `
+          <div class="status error">❌ Network Error</div>
+          <pre>${error.message}</pre>
+        `;
       }
     }
 
-    function runQuery(url) {
-      const box = document.getElementById('response-box');
-      box.style.display = 'block';
-      box.textContent = 'Loading...';
-      box.className = '';
-      fetch(url)
-        .then(r => r.json())
-        .then(d => {
-          box.textContent = JSON.stringify(d, null, 2);
-          box.className = 'status-ok';
-        })
-        .catch(e => {
-          box.textContent = 'Error: ' + e.message;
-          box.className = 'status-err';
-        });
-    }
-
-    function sendRequest() {
-      const base = document.getElementById('route-select').value;
-      const param = document.getElementById('param-input').value.trim();
-      runQuery(base + param);
-    }
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('url-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') executeQuery();
+      });
+    });
   </script>
 </body>
 </html>

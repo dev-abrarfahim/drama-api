@@ -22,7 +22,12 @@ import {
   searchDrama,
   getGenre,
   getCountry,
-  getDramaList
+  getDramaList,
+  getRecentCategory,
+  getRecentlyAdded,
+  getPopularOngoingDrama,
+  getMostPopular,
+  getSection
 } from '../controllers/dramaController.js';
 
 // Create a new Express Router instance.
@@ -67,6 +72,26 @@ router.get('/country/:country', getCountry);
 // GET /api/list?char=k
 // Returns the full alphabetical drama list, optionally filtered by first letter.
 router.get('/list', getDramaList);
+
+// GET /api/recent/:category?page=1
+// Returns recent episodes for a specific category (drama, movies, kshow).
+router.get('/recent/:category', getRecentCategory);
+
+// GET /api/recently-added?page=1
+// Returns paginated list of recently added dramas.
+router.get('/recently-added', getRecentlyAdded);
+
+// GET /api/popular-ongoing-drama?page=1
+// Returns paginated list of popular ongoing dramas.
+router.get('/popular-ongoing-drama', getPopularOngoingDrama);
+
+// GET /api/most-popular?page=1
+// Returns paginated list of most popular dramas.
+router.get('/most-popular', getMostPopular);
+
+// GET /api/section/:name?page=1
+// Generic endpoint for any section (recently-added, popular-ongoing-drama, most-popular).
+router.get('/section/:name', getSection);
 
 // Export the router so server.js can mount it under the "/api" prefix
 export default router;

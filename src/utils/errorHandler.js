@@ -29,15 +29,16 @@ const errorHandler = (err, req, res, next) => {
   // exactly which file and line number caused the error.
   console.error(err.stack);
 
+  const statusCode = err.status || 500;
+  const message = err.message || 'Internal Server Error';
+  
   // Send a structured JSON response back to the API client.
   // Use the error's status code if it has one (e.g. 404, 403), or default to 500.
   // HTTP 500 means "Internal Server Error" — something went wrong on the server.
-  res.status(err.status || 500).json({
+  res.status(statusCode).json({
     success: false, // Always false for errors — tells the client the request failed
-
-    // Human-readable error message.  If no message was set, use a generic fallback.
-    message: err.message || 'Internal Server Error',
-
+    message,
+    statusCode,
     // Only include the full stack trace in development mode.
     // In production we hide it because it can expose internal file paths and logic,
     // which would be a security risk.

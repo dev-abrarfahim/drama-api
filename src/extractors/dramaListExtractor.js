@@ -17,22 +17,32 @@ import * as cheerio from 'cheerio'; // HTML parser with jQuery-style selectors
 import { BASE_URL, HEADERS, extractDramaId } from '../configs/constants.js';
 
 /**
- * scrapeDramaList(char)
+ * scrapeDramaList(char, page)
  *
  * Fetches the alphabetical drama list and returns all entries on that page.
  *
  * @param {string} [char=""]  A single letter (a-z), "other" for special characters,
  *                            or an empty string for the complete list.
- * @returns {Object}  { char, results[], chars[] }
+ * @param {number} [page=1]   Page number for pagination.
+ * @returns {Object}  { char, page, hasNext, totalPages?, results[], chars[] }
  *                    results = array of drama entries.
  *                    chars   = the full A-Z navigation links for use in further requests.
  */
-export const scrapeDramaList = async (char = '') => {
+export const scrapeDramaList = async (char = '', page = 1) => {
   try {
     // Build the correct URL based on whether a character filter was requested
-    const path = char
+    let path = char
       ? `drama-list/char-start-${char.toLowerCase()}.html` // e.g. "drama-list/char-start-k.html"
       : 'drama-list'; // Full list — no filter
+
+    // Append page parameter if page > 1
+    if (page > 1) {
+      // Check if path already has .html
+      if (path.endsWith('.html')) {
+        path = path.replace('.html', '');
+      }
+      path += `?page=${page}`;
+    }
 
     const url = `${BASE_URL}${path}`;
 
@@ -83,8 +93,31 @@ export const scrapeDramaList = async (char = '') => {
       });
     });
 
+    // -----------------------------------------------------------------------
+    // Pagination detection
+    // -----------------------------------------------------------------------
+
+    // Look for a "next page" link — if it exists we know there are more results
+    const hasNext = $('a.next, .pagination .next, a[rel="next"]').length > 0;
+
+    // Attempt to find total pages (optional)
+    let totalPages = null;
+    const pageLinks = $('.pagination a, .page-nav a');
+    const pageNumbers = [];
+    pageLinks.each((i, el) => {
+      const text = $(el).text().trim();
+      const num = parseInt(text);
+      if (!isNaN(num)) pageNumbers.push(num);
+    });
+    if (pageNumbers.length > 0) {
+      totalPages = Math.max(...pageNumbers);
+    }
+
     return {
       char: char || 'all', // Which filter is active ("all", "k", "other", etc.)
+      page,
+      hasNext,
+      totalPages,
       results,             // Array of drama entries
       chars                // Full A-Z navigation data
     };

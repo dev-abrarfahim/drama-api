@@ -119,3 +119,77 @@ export const extractEpisodeId = (href) => {
     .replace(/^\//, '')
     .replace(/\.html$/, '');
 };
+
+// ---------------------------------------------------------------------------
+// Robustness Helper Functions
+// ---------------------------------------------------------------------------
+
+import axios from 'axios';
+
+/**
+ * fetchWithRetry()
+ *
+ * Wrapper around axios.get with retry logic and better error handling.
+ *
+ * @param {string} url - URL to fetch
+ * @param {Object} options - Axios options
+ * @param {number} maxRetries - Maximum number of retries (default: 3)
+ * @param {number} retryDelay - Delay between retries in ms (default: 1000)
+ * @returns {Promise} Axios response
+ */
+export const fetchWithRetry = async (url, options = {}, maxRetries = 3, retryDelay = 1000) => {
+  let lastError;
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await axios.get(url, {
+        ...options,
+        timeout: options.timeout || 15000,
+        headers: { ...HEADERS, ...options.headers }
+      });
+      return response;
+    } catch (error) {
+      lastError = error;
+      
+      // Don't retry on 404 or 403 (permission denied)
+      if (error.response) {
+        const status = error.response.status;
+        if (status === 404 || status === 403 || status === 401) {
+          throw error;
+        }
+      }
+      
+      // Don't retry on timeout if we're out of attempts
+      if (attempt === maxRetries) {
+        break;
+      }
+      
+      // Wait before retrying
+      await new Promise(resolve => setTimeout(resolve, retryDelay * attempt));
+    }
+  }
+  
+  throw lastError;
+};
+
+/**
+ * safeExtract()
+ *
+ * Safely extracts data from cheerio element with fallback values.
+ *
+ * @param {Function} $ - Cheerio function
+ * @param {Object} element - Cheerio element
+ * @param {string} selector - CSS selector
+ * @param {string} attr - Attribute to extract (optional)
+ * @param {string} defaultValue - Default value if not found
+ * @returns {string} Extracted value or default
+ */
+export const safeExtract = ($, element, selector, attr = null, defaultValue = '') => {
+  const target = selector ? $(element).find(selector).first() : $(element);
+  if (!target.length) return defaultValue;
+  
+  if (attr) {
+    return target.attr(attr) || defaultValue;
+  }
+  return target.text().trim() || defaultValue;
+};
