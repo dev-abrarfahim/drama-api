@@ -18,7 +18,7 @@
  * to the hard-coded default.  This makes the app easy to reconfigure without
  * touching source code.
  */
-export const BASE_URL = process.env.BASE_URL || 'https://asianctv.net/';
+export const BASE_URL = process.env.BASE_URL || 'https://asianc.id/';
 
 // ---------------------------------------------------------------------------
 // HTTP Headers
